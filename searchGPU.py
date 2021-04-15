@@ -36,9 +36,9 @@ def k_fold(k, X,ids):
         optimizer = torch.optim.Adam(net.parameters(), lr=1e-4 ,weight_decay=0.01)
         scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.75)
         train_list, val_lsit = get_k_fold_data(k, i, X)  # 获取k折交叉验证的训练和验证数据
-        train_set = MySet_npy(train_list)
+        train_set = MySet(train_list)
         train_loader = DataLoader(train_set, batch_size=2, shuffle=True)
-        val_set = MySet_npy(val_lsit)
+        val_set = MySet(val_lsit)
         val_loader = DataLoader(val_set, batch_size=1, shuffle=False)
         criterion_bce = torch.nn.BCELoss()
 
@@ -64,11 +64,18 @@ def train(k, net, train_loader, val_loader, optimizer, criterion_bce):
             loss.backward()
 
 
+from email.mime.multipart import MIMEMultipart
+
+smtpserver = 'smtp.qq.com'
+username = 'mc-yao@qq.com'
+password = 'auxwnwzdrtlfbihb'
+sender = 'mc-yao@qq.com'
+receiver = ['liuyiyao0916@163.com']
 
 import pynvml
 import os
 import time
-train_list = get_data_list("/home/ubuntu/liuyiyao/3D_breast_Seg/Dataset/miccai_data_64*256*256_patch", ratio=0.8)
+train_list = get_data_list("/home/ubuntu/liuyiyao/Data/Breast_s", ratio=0.8)
 pynvml.nvmlInit()
 devicen_num = pynvml.nvmlDeviceGetCount()
 while True:
@@ -81,13 +88,24 @@ while True:
         print("gpu:", i, '  mem_used:', meminfo.used / 1024 / 1024, '  power:', power_state / 1000, '  perf:',
               power_perf)
         if meminfo.used/1024/1024 < 5000 and power_perf == 8:
-            print("start1")
 
             os.environ["CUDA_VISIBLE_DEVICES"] = "%d"%i
-            print("start2")
+
             device_ids = [0]
-            print("start   ",device_ids[0])
-
+            subject = 'Server 172.21.141.14, GPU : %s is free '%i
+            msg = MIMEMultipart('mixed')
+            msg['Subject'] = subject
+            msg['From'] = 'mc-yao@qq.com <mc-yao@qq.com>'
+            msg['To'] = ";".join(receiver)
+            text = 'Server 172.21.141.14, GPU : %s is free '%i
+            text_plain = MIMEText(text, 'plain', 'utf-8')
+            msg.attach(text_plain)
+            smtp = smtplib.SMTP()
+            smtp.connect('smtp.qq.com')
+            # 我们用set_debuglevel(1)就可以打印出和SMTP服务器交互的所有信息。
+            # smtp.set_debuglevel(1)
+            smtp.login(username, password)
+            smtp.sendmail(sender, receiver, msg.as_string())
+            smtp.quit()
             k_fold(5, train_list, device_ids)
-
     time.sleep(10889)

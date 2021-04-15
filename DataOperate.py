@@ -37,8 +37,8 @@ class MySet(Dataset):
         self.data_list = data_list
     def __getitem__(self, item):
         data_dict = self.data_list[item]
-        image_path = data_dict["data"] + '/image.nii.gz'
-        mask_path = data_dict["data"]+'/label.nii.gz'
+        image_path = data_dict["data"] + '/imaging.nii.gz'
+        mask_path = data_dict["data"]+'/segmentation.nii.gz'
         label_path = data_dict["data"] + '/label.txt'
         name = data_dict["name"]
         image = sitk.ReadImage(image_path)
