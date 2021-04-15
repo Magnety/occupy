@@ -108,4 +108,4 @@ while True:
             smtp.sendmail(sender, receiver, msg.as_string())
             smtp.quit()
             k_fold(5, train_list, device_ids)
-    time.sleep(10889)
+    time.sleep(10)
